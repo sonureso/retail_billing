@@ -1,0 +1,167 @@
+{% load static %}
+{% load extra_filters %}
+<html>
+
+<head>
+<!--
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+-->
+<script src="{% static 'bootstrap/js/jquery.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<!-- JQuery UI Links ---->
+<link rel="stylesheet" href="{% static 'bootstrap/css/jquery-ui.css' %}">
+<script src="{% static 'bootstrap/js/jquery-ui.js' %}"></script>
+
+<style>
+table, th, td {
+  border: 1px solid white;
+  border-collapse: collapse;
+  padding:2px;
+}
+
+.t_w{
+	color:white;
+	text-decoration:none;
+}
+.t_hover{
+	color:white;
+}
+.t_hover:hover{
+	color:#ff7a7f;
+}
+.qty_change_up{
+	color:#89ff36;
+	cursor:pointer;
+}
+.qty_change_down{
+	color:#ff7a7f;
+	cursor:pointer;
+}
+</style>
+</head>
+
+<body bgcolor="#000;">
+	<div class="t_w" style="float: left; padding:2px; border: 1px solid #ff7a7f; ">&ensp;FrontStore&ensp; </div> 
+	<div class="t_w" style="float: left; "> &ensp;&ensp; &#129333;  Hi {{user}} &ensp;&ensp;&ensp;&ensp;</div>  
+	
+	<center class="t_w">
+		<a href="/" class="t_w t_hover">  &#127968; &Hfr;&ofr;&mfr;&efr;<a/> &ensp;|&ensp;
+		<a href="/bill/" class="t_w t_hover">Billing</a> &ensp;|&ensp;
+		<a href="/prev_bill/" class="t_w t_hover" style="color:#ff7a7f;">Prev Bills</a>
+		{% if request|has_group:'store_manager' %}
+			&ensp;|&ensp; <a href="/add/" class="t_w t_hover">Add Products</a> &ensp;|&ensp;
+			<a href="/settings/" class="t_w t_hover">Settings</a> 
+		{% endif %}
+		<a href="/logout/" class="t_w t_hover" style="float:inline-end;">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; Logout &#10097;&#10097;&ensp;&ensp; </a>
+		<hr/>
+		</center>
+</br></br>
+<!------------------------------------------------------------------------------------------------------->
+<!----------------- Search Bills and See previous Bills ------------------------------------------------->
+<!------------------------------------------------------------------------------------------------------->
+<center class="t_w">
+	<input required type="number" min='0' oninput="validity.valid||(value='');" placeholder="Search Bill" name="bill_no" id="bill_no" autofocus style="background-color:black;" class="t_w" onkeypress="if(event.keyCode == 13){$('#get_bill').click();}"> </br></br>
+	<button class="t_w" style="background-color:black;" name="get_bill" id="get_bill"> Get_bill </button>
+	</br></br><span id="message" class="t_w"></span></br>
+
+	<!----------------- DISPLAY LAST 30 BILL INFORMATION ---------------------------------------------------->
+
+	<div style="overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; height: 200px;">
+	<table class="t_w" style="width:450px; height:500px; text-align:center;font-size: 90%;">
+		<tr>
+			<td colspan=5><center style="color:#ff7a7f;">Recent Bills</center></td>
+		</tr>
+		<tr style="background-color: rgb(122, 1, 1); position: sticky; top: 1; z-index: 1;">
+			<th> Bill id </th>
+			<th> Billing Timestamp </th>
+			<th> Amount </th>
+			<th> Items</th>
+			<th> Status</th>
+		</tr>
+		
+		{% for bill_id, bill in recent_bills.items %}
+		<tr style="color:white;">
+			<td class="recent_bill_id t_hover" id="bill_{{bill.bill_id}}" style="cursor: pointer;">{{bill_id}}</td> &ensp;
+			<td>{{bill.date_updated}}</td> &ensp;
+			<td>{{bill.bill_dict.bill_value}}</td> &ensp;
+			<td>{{bill.bill_dict.items | length}}</td> &ensp;
+			<td><span style="color:#89ff36;">{{bill.bill_dict.status}}</span></td>
+		</tr>
+		{% endfor %}
+	</table>
+	</div>
+	<br/>
+	<!----------------- DISPLAY SPECIFIC BILL INFORMATION --------------------------------------------------->
+
+	<table class="t_w" style="width:400px; padding:5px;text-align:center;" id="bill_table">
+		<tr>
+			<td colspan=4>
+			<center style="color:#ff7a7f;">
+				Customer Bill: <span class="bill_id"></span> &ensp;&ensp; &ensp;&ensp;
+				<span class="bill_date"></span>
+			</center></td>
+		</tr>
+		<tr style="background-color: rgb(122, 1, 1);">
+			<th> Prd Name </th>
+			<th> Qty </th>
+			<th> Price </th>
+			<th> T.Price </th>
+		</tr>
+		<tr>
+			<td  colspan=3>Grand Total</td>
+			<td  colspan=3>0</td>
+		</tr>
+	</table>
+</center>
+
+<script>
+
+$('#bill_table').hide();
+$('body').on('click' , '#get_bill', function() 
+{
+	$.ajax( 
+	{ 
+		type:"POST", 
+		url: "/prev_bill/", 
+		data:{ 
+			what: 'get_bill', 
+			bill_id: $('#bill_no').val(),
+			csrfmiddlewaretoken: '{{ csrf_token }}' 
+		}, 
+		success: function( data )  
+		{ 
+			if(data.issue=='no')
+			{
+				$('#bill_table').show();
+				$('.bill_id').html(data.bill_id);
+				$('.bill_date').html(data.date_updated);
+				$('#bill_no').val('');
+				$('#bill_table tr:last').remove();
+				$('.itemrow').remove();
+				var d = data.bill_dict.items;
+				for(var key in d){
+					$('#bill_table').append('<tr class=itemrow><td>'+d[key].name+'</td><td>'+d[key].qty+' '+d[key].unit+'</td><td>'+d[key].price+'</td><td>'+d[key].amt+'</td></tr>');
+				}
+				$('#bill_table').append('<tr><td style="color:#89ff36">'+data.bill_dict['status']+'</td><td colspan=2> Grand Total </td><td>'+data.bill_dict.bill_value+'</td></tr>');
+			}
+			else
+			{	
+				$('#bill_table').hide();
+				$("#message").show();
+				$("#message").html(data.message);
+				$("#message").css('color', 'red');
+				setTimeout(function(){ $('#message').fadeOut() }, 2000);
+			}
+		}
+	});
+});
+// Script for opening any specific bill id:
+$('.recent_bill_id').click(function()
+{
+	$('#bill_no').val(this.id.substr(5,));
+	$('#get_bill').click();
+});
+</script>
+</body>
+</html>
