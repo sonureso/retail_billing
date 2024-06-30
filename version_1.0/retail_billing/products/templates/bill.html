@@ -1,0 +1,220 @@
+{% load static %}
+{% load extra_filters %}
+<html>
+
+<head>
+<!--<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+-->
+<script src="{% static 'bootstrap/js/jquery.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<!-- JQuery UI Links ---->
+<link rel="stylesheet" href="{% static 'bootstrap/css/jquery-ui.css' %}">
+<script src="{% static 'bootstrap/js/jquery-ui.js' %}"></script>
+
+  
+
+<style>
+table, th, td {
+  border: 1px solid white;
+  border-collapse: collapse;
+  padding:2px;
+}
+
+.t_w{
+	color:white;
+	text-decoration:none;
+}
+.t_hover{
+	color:white;
+}
+.t_hover:hover{
+	color:#ff7a7f;
+}
+.qty_change_up{
+	color:#89ff36;
+	cursor:pointer;
+}
+.qty_change_down{
+	color:#ff7a7f;
+	cursor:pointer;
+}
+.ui-autocomplete {	
+    background-color: inherit;
+	color: white;
+	font-size: 0.75em;
+}
+.ui-menu-item .ui-menu-item-wrapper.ui-state-active {
+    background: rgb(0, 0, 0);
+	color: #ff7a7f;
+} 
+
+</style>
+</head>
+<body bgcolor="#000;">
+	<div class="t_w" style="float: left; padding:2px; border: 1px solid #ff7a7f; ">&ensp;FrontStore&ensp; </div> 
+	<div class="t_w" style="float: left; "> &ensp;&ensp; &#129333;  Hi {{user}} &ensp;&ensp;&ensp;&ensp;</div>  
+	
+	<center class="t_w">
+		<a href="/" class="t_w t_hover">  &#127968; &Hfr;&ofr;&mfr;&efr;<a/> &ensp;|&ensp;
+		<a href="/bill/" class="t_w t_hover" style="color:#ff7a7f;">Billing</a> &ensp;|&ensp;
+		<a href="/prev_bill/" class="t_w t_hover">Prev Bills</a>
+		{% if request|has_group:'store_manager' %}
+			&ensp;|&ensp; <a href="/add/" class="t_w t_hover">Add Products</a> &ensp;|&ensp;
+			<a href="/settings/" class="t_w t_hover">Settings</a> 
+		{% endif %}
+		<a href="/logout/" class="t_w t_hover" style="float:inline-end;">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; Logout &#10097;&#10097;&ensp;&ensp; </a>
+		<hr/>
+	</center>
+</br></br>
+	
+<input type="text" hidden id="bill_id" value="0">
+	
+<center class="t_w">
+	<input type="text" placeholder="Search" name="product" id="product" required autofocus style="background-color:black;" class="t_w"> </br></br>
+	<button class="t_w" style="background-color:black;" name="add" id = "add_to_bill" value=" Add to Bill "> &plus; Add to Bill &plus; </button></br> </br></br> </br>
+	<span id="message" class="t_w"></span> </br> </br>
+	<table class="t_w" style="width:400px; padding:5px;text-align:center;" id="bill_table">
+		<tr>
+			<td colspan=4><center style="color:#ff7a7f;">Customer Bill: <span class="bill_id"></span></center></td>
+		</tr>
+		<tr>
+			<th> Prd Name </th>
+			<th> Qty </th>
+			<th> Price </th>
+			<th> T.Price </th>
+		</tr>
+		
+		<tr>
+			<td  colspan=3>Grand Total</td>
+			<td  colspan=3>0</td>
+		</tr>
+	</table>
+	</br></br>
+	<button style="background-color:black;color:#89ff36;" id="paid_btn"> &ensp; &check; PAID &check; &ensp;</button>
+</center>
+
+<script>
+$('#bill_table').hide();
+$('#paid_btn').hide();
+// Script for autocomplete:
+$(function() {
+  $( "#product" ).autocomplete({
+    source: "/bill/",
+  minLength: 2
+  }); 
+});
+
+$('body').on('click' , '#add_to_bill', function() 
+{ 
+	$.ajax(
+	{ 
+		type:"POST", 
+		url: "/bill/", 
+		data:{ 
+			what: "add_to_bill", 
+			bill_id: $('#bill_id').val(),
+			prd_name: $('#product').val(), 			
+			csrfmiddlewaretoken: '{{ csrf_token }}' 
+		}, 
+		success: function( data )  
+		{ 
+			if(data.bill_id == 0 || data.issue=='yes')
+			{ 
+				$("#message").show();
+				$("#message").html(data.message);
+				$("#message").css('color', 'red');
+				setTimeout(function(){ $('#message').fadeOut() }, 2000); 
+			}
+			else
+			{	
+				$('#bill_table').show();
+				$('#paid_btn').show();
+				$('#bill_id').val(data.bill_id);
+				$('.bill_id').html(data.bill_id);
+				$('#product').val("");
+				$('#bill_table tr:last').remove();
+				$('.itemrow').remove();
+				var d = data.bill_dict.items;
+				
+				for(var key in d){
+					$('#bill_table').append('<tr class=itemrow><td>'+d[key].name+'</td><td><span class="qty_change_up" id=up,'+d[key].id+'> &UpArrowBar;&UpArrowBar; </span>'+d[key].qty+' '+d[key].unit+' <span class="qty_change_down" id=down,'+d[key].id+'> &DownArrowBar;&DownArrowBar; </span>  </td><td>'+d[key].price+'</td><td>'+d[key].amt+'</td></tr>');
+				}
+				$('#bill_table').append('<tr><td colspan=3> Grand Total </td><td>'+data.bill_dict.bill_value+'</td></tr>');
+			}
+		} 
+	 }); 
+});
+
+$('body').on('click' , '.qty_change_up,.qty_change_down', function() 
+{ 
+	
+	$.ajax( 
+	{ 
+		type:"POST", 
+		url: "/bill/", 
+		data:{ 
+			what: 'qty_change', 
+			bill_id: $('#bill_id').val(),
+			item_details: this.id,
+			csrfmiddlewaretoken: '{{ csrf_token }}' 
+		}, 
+		success: function( data )  
+		{ 
+			$('#product').val("");
+			$('#bill_table tr:last').remove();
+			$('.itemrow').remove();
+			
+			var d = data.bill_dict.items;
+			
+			for(var key in d){
+				$('#bill_table').append('<tr class=itemrow><td>'+d[key].name+'</td><td><span class="qty_change_up" id=up,'+d[key].id+'> &UpArrowBar;&UpArrowBar; </span>'+d[key].qty+' '+d[key].unit+' <span class="qty_change_down" id=down,'+d[key].id+'> &DownArrowBar;&DownArrowBar; </span>  </td><td>'+d[key].price+'</td><td>'+d[key].amt+'</td></tr>');
+			}
+			$('#bill_table').append('<tr><td colspan=3> Grand Total </td><td>'+data.bill_dict.bill_value+'</td></tr>');
+		}
+	});
+});
+
+$('body').on("click", '#paid_btn', function() 
+	{ 
+		$.ajax( 
+		{ 
+			type:"POST", 
+			url: "/bill/", 
+			data:{ 
+				what: 'bill_paid', 
+				bill_id: $('#bill_id').val(), 
+				csrfmiddlewaretoken: '{{ csrf_token }}' 
+			}, 
+			success: function( data )  
+			{ 
+				console.log(data)
+				if(data.issue=="yes")
+				{
+					$("#message").show();
+					$("#message").html(data.message);
+					$("#message").css('color', '#89ff36');
+					setTimeout(function(){ $('#message').fadeOut() }, 2000);
+				}
+				else
+				{	
+					$('#bill_table tr:last').remove();
+					$('.itemrow').remove();
+					var d = data.bill_dict.items;
+					for(var key in d){
+						$('#bill_table').append('<tr><td>'+d[key].name+'</td><td>'+d[key].qty+' '+d[key].unit+'</td><td>'+d[key].price+'</td><td>'+d[key].amt+'</td></tr>');
+					}
+					$('#bill_table').append('<tr><td style="color:#89ff36">BILL PAID</td><td colspan=2> Grand Total </td><td>'+data.bill_dict.bill_value+'</td></tr>');
+					$('#paid_btn').hide();
+					$('#product').hide();
+					$('#add_to_bill').hide();
+				}
+				
+			} 
+		 }); 
+	}); 
+</script>
+
+
+</body>
+</html>

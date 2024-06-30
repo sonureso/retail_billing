@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <style>
+            body{
+                background-color: black;
+                color: white;
+            }
+            a{
+                color: white;
+                text-decoration: None;
+            }
+            a:hover{
+                color: rgb(255, 190, 106);
+                /* color: #ff3e3e; */
+            }
+        </style>
+    </head>
+<body>
+<center>
+    {% if on == 'login_form' %}
+        <h2>
+            Welcome to the Login Page
+        </h2>
+        </br></br><span id="message" style="color:{{msg_color}};">{{msg}}</span></br></br>
+        <form action="/login/" method="post">
+            {% csrf_token %}
+            Username: <input type="text" name="user" autocomplete="off"> </br></br>
+            Password: <input type="password" name="pass" autocomplete="off"> </br></br>
+            <a href="/register/">Create new account?</a>&emsp;&emsp;&emsp;<input type="submit">
+        </form>
+    {% endif %}
+
+    {% if on == 'register_form' %}
+        <h2>
+            Kindly Register Yourself!
+        </h2>
+        </br></br><span id="message" style="color:{{msg_color}};">{{msg}}</span></br></br>
+        <form action="/register/" method="post">
+            {% csrf_token %}
+            Username: <input type="text" name="user" autocomplete="off"> </br></br>
+            Password: <input type="password" name="pass" autocomplete="off"> </br></br>
+            <a href="/login/">Login Here!</a>&emsp;&emsp;&emsp;&emsp;&emsp;<input type="submit">
+        </form>
+    {% endif %}
+
+</center>
+
+</body>
+</html>

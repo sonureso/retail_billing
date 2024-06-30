@@ -1,0 +1,89 @@
+{% load static %}
+{% load extra_filters %}
+<html>
+<head>
+
+<script src="{% static 'bootstrap/js/jquery.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<!-- JQuery UI Links ---->
+<link rel="stylesheet" href="{% static 'bootstrap/css/jquery-ui.css' %}">
+<script src="{% static 'bootstrap/js/jquery-ui.js' %}"></script>
+
+<style>
+table, th, td {
+  border: 1px solid white;
+  border-collapse: collapse;
+  padding:4px;
+}
+.t_w{
+	color:white;
+	text-decoration:none;
+}
+.t_hover{
+	color:white;
+}
+.t_hover:hover{
+	color:#ff7a7f;
+}
+.prdnm{
+	cursor:pointer;
+}
+</style>
+</head>
+<body bgcolor="#000;">
+	<div class="t_w" style="float: left; padding:2px; border: 1px solid #ff7a7f; ">&ensp;FrontStore&ensp; </div> 
+	<div class="t_w" style="float: left; "> &ensp;&ensp; &#129333;  Hi {{user}} &ensp;&ensp;&ensp;&ensp;</div>  
+	
+	<center class="t_w">
+		<a href="/" class="t_w t_hover">  &#127968; &Hfr;&ofr;&mfr;&efr;<a/> &ensp;|&ensp;
+		<a href="/bill/" class="t_w t_hover">Billing</a> &ensp;|&ensp;
+		<a href="/prev_bill/" class="t_w t_hover">Prev Bills</a>
+		{% if request|has_group:'store_manager' %}
+			&ensp;|&ensp; <a href="/add/" class="t_w t_hover">Add Products</a> &ensp;|&ensp;
+			<a href="/settings/" class="t_w t_hover" style="color:#ff7a7f;">Settings</a> 
+		{% endif %}
+		<a href="/logout/" class="t_w t_hover" style="float:inline-end;">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; Logout &#10097;&#10097;&ensp;&ensp; </a>
+		<hr/>
+	</center>
+</br>
+<center>
+<table class="t_w" style="width:450px; padding:5px;">
+	<tr>
+		<td colspan=5><center style="color:#ff7a7f;">All products</center></td>
+	</tr>
+	<tr>
+		<th> Prd id </th>
+		<th> Prd Name </th>
+		<th> Price </th>
+		<th> per </th>
+		<th> Qty</th>
+	</tr>
+
+	{% for product in products %}
+	<tr style="color:white;" class="itemrow">
+		<td>{{product.id}}</td> &ensp;
+		<td class="prdnm" id="row{{product.id}}"><span style="color:#89ff36;">{{product.name}}</span></td> &ensp;
+		<td>{{product.price}}</td> &ensp;
+		<td>{{product.unit}}</td> &ensp;
+		<td>{{product.available_qty}}</td>
+	</tr>
+	{% endfor %}
+</table>
+<br/>
+<form id="upd_form" hidden action="/upd/" method='POST'>
+	{% csrf_token %}
+	<input type="text" hidden id="upd_what" name="upd_what"> 
+	<input type="number" id="upd_id" name="upd_id"> 
+	<button type="submit">Submit</button>
+</form>
+</center>
+<script>
+$('.prdnm').click(function(){
+	$('#upd_id').val(this.id.substr(3,));
+	$('#upd_what').val('open');
+	$('#upd_form').submit();
+});
+
+</script>
+</body>
+</html>

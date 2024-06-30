@@ -1,0 +1,41 @@
+credentials: Sonu -> 890890
+===================================================================
+
+
+
+
+===================================================================
+0. About the project "retail_billing".
+    This is a Django app made for:
+    1. Billing System management of retail shop.
+    2. Inventory Management.
+-------------------------------------------------------------------
+1. How to run on localhost:
+    With CMD,Go to the folder containing manage.py file
+    run: python manage.py runserver
+-------------------------------------------------------------------
+2. How to keep Django app on AWS EC2 ? 
+    Step to keep Django on EC2: 
+    1. Create env and keep your django app inside it.
+    2. python -m venv my_env | go inside and run activate.
+    3. Install django and Pillow(if required)
+    4. pip install Pillow | pip install Django
+    5. In Settings.py file: allowed urls/hosts = ["*"] and debug = False
+    6. Open windows defender firewall properties
+    7. Go to: Public Profile and allow the inbound connections.
+    8. run: python manage.py collectstatic
+    9. update urls.py as below for serving static files if DEBUG is False:
+    10. 
+        ```
+        from django.views.static import serve 
+        from django.conf.urls import url 
+        from . import settings
+
+        url(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
+        ```
+    11. run the server as: python manage.py runserver 0.0.0.0:80
+    12. You are done, go and check the public IP.
+-------------------------------------------------------------------
+3. Next Question
+
+

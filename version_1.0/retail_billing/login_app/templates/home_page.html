@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <style>
+            body{
+                background-color: black;
+                color: white;
+            }
+            a{
+                color: white;
+                text-decoration: None;
+            }
+            a:hover{
+                color: rgb(255, 190, 106);
+            }
+        </style>
+    </head>
+<body>
+<center>
+    {% if user.is_authenticated %}
+        <h2>
+            Welcome to the home page {{user.first_name}} {{user.last_name}}
+        </h2>
+        You have logged in.
+        <br><br><br>
+        <a href="/logout/"> <input type="submit" value="log-out"></a>
+    {% else %}
+            Sorry. You are not authenticated here.
+    {% endif %}
+</center>
+</body>
+</html>
