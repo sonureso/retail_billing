@@ -23,7 +23,7 @@ table, th, td {
 </style>
 </head>
 <body bgcolor="#000;">
-	<div class="t_w" style="float: left; padding:2px; border: 1px solid #ff7a7f; ">&ensp;FrontStore&ensp; </div> 
+	<div class="t_w" style="float: left; padding:2px; border: 1px solid #ff7a7f; ">&ensp;{{store_obj}}&ensp; </div> 
 	<div class="t_w" style="float: left; "> &ensp;&ensp; &#129333;  Hi {{user}} &ensp;&ensp;&ensp;&ensp;</div>  
 	
 	<center class="t_w">
@@ -31,8 +31,10 @@ table, th, td {
 		<a href="/bill/" class="t_w t_hover">Billing</a> &ensp;|&ensp;
 		<a href="/prev_bill/" class="t_w t_hover">Prev Bills</a>
 		{% if request|has_group:'store_manager' %}
-			&ensp;|&ensp; <a href="/add/" class="t_w t_hover">Add Products</a> &ensp;|&ensp;
-			<a href="/settings/" class="t_w t_hover" style="color:#ff7a7f;">Settings</a> 
+			&ensp;|&ensp; <a href="/add/" class="t_w t_hover"  style="color:#ff7a7f;">Add Products</a> 
+		{% endif %}
+		{% if user.is_superuser %}
+			&ensp;|&ensp; <a href="/settings/" class="t_w t_hover">Settings</a> 
 		{% endif %}
 		<a href="/logout/" class="t_w t_hover" style="float:inline-end;">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; Logout &#10097;&#10097;&ensp;&ensp; </a>
 		<hr/>
@@ -57,6 +59,7 @@ table, th, td {
 			<option {% if product.unit == 'gross' %} selected {% endif %} value="gross">gross</option>
 			<option {% if product.unit == 'packet' %} selected {% endif %} value="packet">packet</option>
 			<option {% if product.unit == 'Kg' %} selected {% endif %} value="Kg">Kg</option>
+			<option {% if product.unit == 'set' %} selected {% endif %} value="set">set</option>
 		</select> 		</br></br>
 		
 		<span class="t_w" style="">Available Units: &nbsp;</span>

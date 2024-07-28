@@ -1,0 +1,174 @@
+{% load static %}
+{% load extra_filters %}
+<html>
+
+<head>
+<!--<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+-->
+<script src="{% static 'bootstrap/js/jquery.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<!-- JQuery UI Links ---->
+<link rel="stylesheet" href="{% static 'bootstrap/css/jquery-ui.css' %}">
+<script src="{% static 'bootstrap/js/jquery-ui.js' %}"></script>
+
+<style>
+
+table, th, td {
+  border: 1px solid white;
+  border-collapse: collapse;
+  padding:2px;
+}
+
+.t_w{
+	color:white;
+	text-decoration:none;
+}
+.t_hover{
+	color:white;
+}
+.t_hover:hover{
+	color:#ff7a7f;
+}
+.ui-autocomplete {	
+    background-color: inherit;
+	color: white;
+	font-size: 0.75em;
+}
+.ui-menu-item .ui-menu-item-wrapper.ui-state-active {
+    background: rgb(0, 0, 0);
+	color: #ff7a7f;
+} 
+</style>
+</head>
+<body bgcolor="#000;">
+	<div class="t_w" style="float: left; padding:2px; border: 1px solid #ff7a7f; ">&ensp;{{store_obj}}&ensp; </div> 
+	<div class="t_w" style="float: left; "> &ensp;&ensp; &#129333;  Hi {{user}}&ensp;&ensp;&ensp;&ensp;</div>  
+	
+	<center class="t_w">
+		<a href="/" class="t_w t_hover">  &#127968; &Hfr;&ofr;&mfr;&efr;<a/> &ensp;|&ensp;
+		<a href="/bill/" class="t_w t_hover">Billing</a> &ensp;|&ensp;
+		<a href="/prev_bill/" class="t_w t_hover">Prev Bills</a>
+		{% if request|has_group:'store_manager' %}
+			&ensp;|&ensp; <a href="/add/" class="t_w t_hover">Add Products</a> 
+		{% endif %}
+		{% if user.is_superuser %}
+				&ensp;|&ensp; <a href="/settings/" class="t_w t_hover" style="color:#ff7a7f;">Settings</a> 
+		{% endif %}
+		<a href="/logout/" class="t_w t_hover" style="float:inline-end;">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; Logout &#10097;&#10097;&ensp;&ensp; </a>
+		<hr/>
+	</center>
+</br></br>
+
+<center class="t_w">
+<div style="background-color:;height:auto;width:350px;">
+	{% if check_what == 'store' %}
+	<!-- STORE: FOR FOR ADDING / UPDATING THE STORE -->
+	<form method="POST" action="./">
+		<u><h3 class="t_w" style="color:#ff7a7f;"> Update Store: {{store.name}}</h3></u>
+		
+		{% csrf_token %}
+		<input type="text" hidden id="upd_what" name="upd_what" value="update_store_details"> 
+		<input type="number" hidden id="upd_id" name="upd_id" value="{{store.id}}"> 
+		<span class="t_w" style="">Store Name: &ensp;</span> 
+		<input type="text" placeholder="Store Name" name="store_name" required  style="background-color:black;" class="t_w" value="{{store.name}}"> </br></br>
+		<span class="t_w" style="">Store Address: </span> 
+		<input type="text" placeholder="Store Address" name="store_address" required  style="background-color:black;" class="t_w" value="{{store.address}}"> </br></br>
+		<span class="t_w" style="">Cash Value: &nbsp; &ensp;</span>
+		<input type="number" placeholder="Cash Value" name="CV" required  style="background-color:black;" class="t_w" value="{{store.cash_value}}"> </br></br>
+		<span class="t_w" style="">Active Flag:&nbsp; &ensp;</span>
+		<select required name="activeFlag" style="background-color:black;width:170px;" class="t_w">
+			<option {% if store.activeFlag == 'Y' %} selected {% endif %} value="Y">Y - Active</option>
+			<option {% if store.activeFlag == 'N' %} selected {% endif %} value="N">N - Not Active</option>
+		</select> 		</br></br>
+		
+		<span class="t_w" style="background-color:black;">Store Manager:  &ensp;</span>
+		<input type="text" placeholder="Search Users" name="Store_Manager" id="manager" required style="background-color:black;" class="t_w" value="{{manager.emp_obj.username}}">
+		 </br></br>
+		
+		<span class="t_w" style="">Store Owner:  &nbsp; &ensp;</span>
+		<input type="text" placeholder="Search Users" name="Store_Owner" id="owner" required style="background-color:black;" class="t_w" value="{{store.creator.username}}"> </br></br>
+	
+		<!--<input type="reset" style="background-color:black;" class="t_w" value=" Reset "> &ensp; &ensp;
+		-->
+		<input class="t_w" style="background-color:black;" type="submit" name="submit_button" value=" Update ">
+		<input class="t_w" style="background-color:black;" type="submit" name="submit_button" value=" Delete ">
+		<input onclick="history.back()" class="t_w" style="background-color:black;" type="button" name="cancel_button" value=" Cancel ">
+	</form>
+	{% elif check_what == 'emp' %}
+	<!-- USER: FOR FOR ADDING / UPDATING THE USER -->
+	<form method="POST" action="./">
+		{% csrf_token %}
+		{% if emp_user_obj == None %}
+		<u><h3 class="t_w" style="color:#ff7a7f;"> New Emp Details required for: {{raw_user_obj.username}}</h3></u>
+			<input type="text" hidden id="upd_what" name="upd_what" value="create_new_employee">
+			<input type="number" hidden id="upd_id" name="upd_id" value="{{raw_user_obj.id}}">
+			<span class="t_w" style="">User Name: &ensp;</span> 
+			<input type="text" placeholder="User Name" name="user_name" required readonly style="background-color:black;" class="t_w" value="{{raw_user_obj.username}}"> </br></br>
+		 
+		{% else %}
+		<u><h3 class="t_w" style="color:#ff7a7f;"> Update Employee Details for: {{emp_user_obj.emp_obj.username}}</h3></u>
+			<input type="text" hidden id="upd_what" name="upd_what" value="update_emp_details">
+			<input type="number" hidden id="upd_id" name="upd_id" value="{{emp_user_obj.id}}">
+			<span class="t_w" style="">User Name: &ensp;</span> 
+			<input type="text" placeholder="User Name" name="user_name" required readonly style="background-color:black;" class="t_w" value="{{emp_user_obj.emp_obj.username}}"> </br></br>
+		
+		{% endif %}
+		
+		 
+		<span class="t_w" style="">User Address: </span> 
+		<input type="text" placeholder="User Address" name="user_address" required  style="background-color:black;" class="t_w" value="{{emp_user_obj.addr}}"> </br></br>
+		<span class="t_w" style="">Active Flag:&nbsp; &ensp;</span>
+		<select required name="activeFlag" style="background-color:black;width:170px;" class="t_w">
+			<option {% if emp_user_obj.activeFlag == 'Y' %} selected {% endif %} value="Y">Y - Active</option>
+			<option {% if emp_user_obj.activeFlag == 'N' %} selected {% endif %} value="N">N - Not Active</option>
+		</select> 		</br></br>
+		<span class="t_w" style="">&nbsp;Emp Role: &nbsp; &ensp;</span>
+		<select required name="role" style="background-color:black;width:170px;" class="t_w">
+			<option {% if emp_user_obj.role == 'store_staff' %} selected {% endif %} value="store_staff">store_staff</option>
+			<option {% if emp_user_obj.role == 'store_manager' %} selected {% endif %} value="store_manager">store_manager</option>
+		</select> </br></br>
+		<span class="t_w" style="background-color:black;">Emp of Store:  &ensp;</span>
+		<input type="text" placeholder="Search Stores" name="store" id="store" style="background-color:black;" class="t_w" value="{{emp_user_obj.store_obj.name}}">
+		</br></br>
+		
+		<input class="t_w" style="background-color:black;" type="submit" name="submit_button" value=" Update ">
+		{% if emp_user_obj != None %}
+			<input class="t_w" style="background-color:black;" type="submit" name="submit_button" value=" Delete ">
+		{% endif %}
+		<input onclick="history.back()" class="t_w" style="background-color:black;" type="button" name="cancel_button" value=" Cancel ">
+	</form>
+	{% endif %}
+</div>
+</br>
+
+
+
+</center>
+
+<script>
+	
+	$(function() {
+	  $( "#manager" ).autocomplete({
+		source: "../get_user_for_manager/",
+	  minLength: 2
+	  }); 
+	});
+
+	$(function() {
+	  $( "#owner" ).autocomplete({
+		source: "../get_user/",
+	  minLength: 2
+	  }); 
+	});
+	
+	$(function() {
+	  $( "#store" ).autocomplete({
+		source: "../get_store/",
+	  minLength: 2
+	  }); 
+	});
+
+</script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse,JsonResponse
 from products.models import product, bill_data
+from stores_app.models import store_emp
 import json
 from django.contrib.auth.decorators import login_required
 from .templatetags.extra_filters import has_group
@@ -18,8 +19,11 @@ def home(request):
     data = {}
     data['PV'] = 0  # PV: Product Valuation
     items = list(product.objects.all().order_by('-id'))[:]
+    emp_obj = store_emp.objects.all().filter(emp_obj=request.user).first()
+    data['store_obj'] = emp_obj.store_obj if emp_obj is not None else "Store not available"
     for item in items:
         data['PV'] = data['PV'] + (item.price * item.available_qty)
+    data['SV'] = data['PV']+data['store_obj'].cash_value
     return render(request,'home.html', data)
 
 @login_required(login_url='/login/')
@@ -121,6 +125,8 @@ def bill(request):
             return HttpResponse("ok")
     else:
         data = {}
+        emp_obj = store_emp.objects.all().filter(emp_obj=request.user).first()
+        data['store_obj'] = emp_obj.store_obj if emp_obj is not None else "Store not available"
         return render(request,'bill.html',data)
 
 @login_required(login_url='/login/')
@@ -128,6 +134,8 @@ def prev_bill(request):
     data = {}
     ## ****** Collect Recent Bills ****** ##
     data['recent_bills'] = {}
+    emp_obj = store_emp.objects.all().filter(emp_obj=request.user).first()
+    data['store_obj'] = emp_obj.store_obj if emp_obj is not None else "Store not available"
     bill_objs = list(bill_data.objects.all().order_by('-date_updated'))[:50]
     for bill_obj in bill_objs:
         d = {}
@@ -161,7 +169,9 @@ def prev_bill(request):
 @login_required(login_url='/login/')
 def add_product(request):
     data = {}
-    data['products'] = list(product.objects.all().order_by('-id'))[:5]
+    emp_obj = store_emp.objects.all().filter(emp_obj=request.user).first()
+    data['store_obj'] = emp_obj.store_obj if emp_obj is not None else "Store not available"
+    data['products'] = list(product.objects.all().order_by('name'))[:50]
     if not has_group(request, 'store_manager'):
         return redirect('/home/')
     elif request.method=='POST':
@@ -176,19 +186,21 @@ def add_product(request):
     else:
         return render(request,'add_product.html',data)
 
-# require group -> store manager
-@login_required(login_url='/login/')    
-def settings(request):
-    if not has_group(request, 'store_manager'):
-        return redirect('/home/')
-    data = {}
-    data['products'] = list(product.objects.all().order_by('-id'))[:]
-    return render(request,'settings.html',data)
+# # require group -> store manager
+# @login_required(login_url='/login/')    
+# def settings(request):
+#     if not has_group(request, 'store_manager'):
+#         return redirect('/home/')
+#     data = {}
+#     data['products'] = list(product.objects.all().order_by('-id'))[:]
+#     return render(request,'settings.html',data)
 
 # require group -> store manager
 @login_required(login_url='/login/')
 def upd(request):
     data = {}
+    emp_obj = store_emp.objects.all().filter(emp_obj=request.user).first()
+    data['store_obj'] = emp_obj.store_obj if emp_obj is not None else "Store not available"
     if not has_group(request, 'store_manager'):
         return redirect('/home/')
     elif request.method=='POST':

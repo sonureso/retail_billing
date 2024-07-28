@@ -10,5 +10,6 @@ from . import settings
 urlpatterns = [
     path('',include('login_app.urls')),
     path('admin/', admin.site.urls),
+    path('settings/', include('stores_app.urls')),
 	url(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}), 
 ]

@@ -8,7 +8,7 @@ urlpatterns = [
         path('add/',views.add_product, name="add_product"),
         path('bill/',views.bill, name="bill"),
         path('prev_bill/',views.prev_bill, name="prev_bill"),
-        path('settings/',views.settings, name="settings"),
+        # path('settings/',views.settings, name="settings"),
         path('upd/',views.upd, name="update"),
         
 	]

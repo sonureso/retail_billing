@@ -1,7 +1,16 @@
+{% load static %}
 {% load extra_filters %}
+
 <html>
 
 <head>
+
+<script src="{% static 'bootstrap/js/jquery.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<!-- JQuery UI Links ---->
+<link rel="stylesheet" href="{% static 'bootstrap/css/jquery-ui.css' %}">
+<script src="{% static 'bootstrap/js/jquery-ui.js' %}"></script>
+
 <style>
 
 table, th, td {
@@ -20,10 +29,13 @@ table, th, td {
 .t_hover:hover{
 	color:#ff7a7f;
 }
+.prdnm{
+	cursor:pointer;
+}
 </style>
 </head>
 <body bgcolor="#000;">
-	<div class="t_w" style="float: left; padding:2px; border: 1px solid #ff7a7f; ">&ensp;FrontStore&ensp; </div> 
+	<div class="t_w" style="float: left; padding:2px; border: 1px solid #ff7a7f; ">&ensp;{{store_obj}}&ensp; </div> 
 	<div class="t_w" style="float: left; "> &ensp;&ensp; &#129333;  Hi {{user}} &ensp;&ensp;&ensp;&ensp;</div>  
 	
 	<center class="t_w">
@@ -31,8 +43,10 @@ table, th, td {
 		<a href="/bill/" class="t_w t_hover">Billing</a> &ensp;|&ensp;
 		<a href="/prev_bill/" class="t_w t_hover">Prev Bills</a>
 		{% if request|has_group:'store_manager' %}
-			&ensp;|&ensp; <a href="/add/" class="t_w t_hover" style="color:#ff7a7f;">Add Products</a> &ensp;|&ensp;
-			<a href="/settings/" class="t_w t_hover">Settings</a> 
+			&ensp;|&ensp; <a href="/add/" class="t_w t_hover" style="color:#ff7a7f;">Add Products</a> 
+		{% endif %}
+		{% if user.is_superuser %}
+			&ensp;|&ensp; <a href="/settings/" class="t_w t_hover">Settings</a> 
 		{% endif %}
 		<a href="/logout/" class="t_w t_hover" style="float:inline-end;">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; Logout &#10097;&#10097;&ensp;&ensp; </a>
 		<hr/>
@@ -55,6 +69,7 @@ table, th, td {
 			<option value="gross">gross</option>
 			<option value="packet">packet</option>
 			<option value="Kg">Kg</option>
+			<option value="set">set</option>
 		</select> 		</br></br>
 		
 		<span class="t_w" style="">Available Units: &nbsp;</span>
@@ -68,31 +83,46 @@ table, th, td {
 		
 	</form>
 </div>
-</br>
-<table class="t_w" style="width:400px; padding:5px;">
-<tr>
-	<td colspan=5><center style="color:#ff7a7f;">Recently Added products</center></td>
-</tr>
-<tr>
-	<th> Prd id </th>
-	<th> Prd Name </th>
-	<th> Price </th>
-	<th> per </th>
-	<th> Qty</th>
-</tr>
+<div style="width:450px;overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; height: 200px;">
+	<table class="t_w" style="width:450px;">
+	<tr>
+		<td colspan=5><center style="color:#ff7a7f;">Recently Added products</center></td>
+	</tr>
+	<tr style="background-color: rgb(122, 1, 1); position: sticky; top: 1; z-index: 1;">
+		<th> Prd id </th>
+		<th> Prd Name </th>
+		<th> Price </th>
+		<th> per </th>
+		<th> Qty</th>
+	</tr>
 
-{% for product in products %}
-<tr style="color:white;">
-	<td>{{product.id}}</td> &ensp;
-	<td>{{product.name}}</td> &ensp;
-	<td>{{product.price}}</td> &ensp;
-	<td>{{product.unit}}</td> &ensp;
-	<td>{{product.available_qty}}</td>
-</tr>
-{% endfor %}
-</table>
-
+	{% for product in products %}
+	<tr style="color:white;">
+		<td>{{product.id}}</td> &ensp;
+		<td class = "prdnm" id="row{{product.id}}"><span style="color:#89ff36;">{{product.name}}</span></td> &ensp;
+		<td>{{product.price}}</td> &ensp;
+		<td>{{product.unit}}</td> &ensp;
+		<td>{{product.available_qty}}</td>
+	</tr>
+	{% endfor %}
+	</table>
+	<form id="upd_form" hidden action="/upd/" method='POST'>
+		{% csrf_token %}
+		<input type="text" hidden id="upd_what" name="upd_what"> 
+		<input type="number" id="upd_id" name="upd_id"> 
+		<button type="submit">Submit</button>
+	</form>
+</div>
 
 </center>
+
+<script>
+$('.prdnm').click(function(){
+	$('#upd_id').val(this.id.substr(3,));
+	$('#upd_what').val('open');
+	$('#upd_form').submit();
+});
+
+</script>
 </body>
 </html>

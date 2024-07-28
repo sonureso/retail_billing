@@ -1,0 +1,204 @@
+{% load static %}
+{% load extra_filters %}
+<html>
+<head>
+
+<script src="{% static 'bootstrap/js/jquery.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<!-- JQuery UI Links ---->
+<link rel="stylesheet" href="{% static 'bootstrap/css/jquery-ui.css' %}">
+<script src="{% static 'bootstrap/js/jquery-ui.js' %}"></script>
+
+<style>
+table, th, td {
+  border: 1px solid white;
+  border-collapse: collapse;
+  padding:4px;
+}
+.t_w{
+	color:white;
+	text-decoration:none;
+}
+.t_hover{
+	color:white;
+}
+.t_hover:hover{
+	color:#ff7a7f;
+}
+.store_name,.user_name,#btn_add_store{
+	cursor:pointer;
+}
+.ui-autocomplete {	
+    background-color: inherit;
+	color: white;
+	font-size: 0.75em;
+}
+.ui-menu-item .ui-menu-item-wrapper.ui-state-active {
+    background: rgb(0, 0, 0);
+	color: #ff7a7f;
+}
+</style>
+</head>
+<body bgcolor="#000;">
+	<div class="t_w" style="float: left; padding:2px; border: 1px solid #ff7a7f; ">&ensp;{{store_obj}}&ensp; </div> 
+	<div class="t_w" style="float: left; "> &ensp;&ensp; &#129333;  Hi {{user}}&ensp;&ensp;&ensp;&ensp;</div>  
+	<!-- MENU Section on TOP -->
+	<center class="t_w">
+		<a href="/" class="t_w t_hover">  &#127968; &Hfr;&ofr;&mfr;&efr;<a/> &ensp;|&ensp;
+		<a href="/bill/" class="t_w t_hover">Billing</a> &ensp;|&ensp;
+		<a href="/prev_bill/" class="t_w t_hover">Prev Bills</a>
+		{% if request|has_group:'store_manager' %}
+			&ensp;|&ensp; <a href="/add/" class="t_w t_hover">Add Products</a> 
+		{% endif %}
+		{% if user.is_superuser %}
+				&ensp;|&ensp; <a href="/settings/" class="t_w t_hover" style="color:#ff7a7f;">Settings</a> 
+		{% endif %}
+		<a href="/logout/" class="t_w t_hover" style="float:inline-end;">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; Logout &#10097;&#10097;&ensp;&ensp; </a>
+		<hr/>
+	</center>
+</br>
+<form id="upd_form" hidden action="upd_settings/" method='POST'>
+	{% csrf_token %}
+	<input type="text" hidden id="upd_what" name="upd_what"> 
+	<input type="number" id="upd_id" name="upd_id"> 
+	<button type="submit">Submit</button>
+</form>
+<center>
+<!------------------------------------------------------------------------------------------------------->
+<!-----------------1. Show All Stores and edit it ------------------------------------------------------->
+<!------------------------------------------------------------------------------------------------------->
+<div style="overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; height: 201px;" id="all_stores">
+	<table class="t_w" style="width:450px; padding:5px; font-size: 90%;">
+		<tr>
+			<td colspan=6>
+				<center style="color:#ff7a7f;">
+					All Stores &#8594;  &ensp;&ensp;
+					<span id="btn_add_store" class="t_hover">Add New Store&#10750;</span>
+
+				</center></td>
+		</tr>
+		<tr style="background-color: rgb(122, 1, 1); position: sticky; top: 1; z-index: 1;">
+			<th> ID </th>
+			<th> Store Name </th>
+			<th> Cash Value </th>
+			<th> Active </th>
+			<th> Manager </th>
+			<th> Owner</th>
+		</tr>
+
+		{% for store,manager in stores_data %}
+		<tr style="color:white;" class="itemrow">
+			<td>{{store.id}}</td> &ensp;
+			<td class="store_name" id="row{{store.id}}"><span style="color:#89ff36;">{{store.name}}</span></td> &ensp;
+			<td>{{store.cash_value}}</td> &ensp;
+			<td>{{store.activeFlag}}</td> &ensp;
+			<td>{{manager}}</td> &ensp;
+			<td>{{store.creator.username}}</td>
+		</tr>
+		{% endfor %}
+	</table>
+</div>
+<!------------------------------------------------------------------------------------------------------->
+<!-----------------2. Show All Users & Options to make Store EMP ---------------------------------------->
+<!------------------------------------------------------------------------------------------------------->
+<div style="overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; height: 201px;" id="all_users">
+	<table class="t_w" style="width:450px; padding:5px; font-size: 85%;">
+		<tr>
+			<td colspan=7>
+				<center style="color:#ff7a7f;">
+					All Users 
+					<!-- &#8594;  &ensp;&ensp; -->
+					<!-- <span id="btn_add_store" class="t_hover">OPTIONS&#10750;</span> -->
+
+				</center></td>
+		</tr>
+		<tr style="background-color: rgb(122, 1, 1); position: sticky; top: 1; z-index: 1;">
+			<th> User </th>
+			<th> Admin </th>
+			<th> StoreEmp </th>
+			<th> Active </th>
+			<th> StoreName </th>
+			<th> Role </th>
+		</tr>
+
+		{% for obj in all_users %}
+		<tr style="color:white;" class="itemrow">
+			<td class="user_name" id="row{{obj.user_obj.id}}"><span style="color:#89ff36;">{{obj.user_obj.username}}</span></td> &ensp;
+			<td>{{obj.user_obj.is_superuser}}</td> &ensp;
+			<td>{{obj.is_emp}}</td> &ensp;
+			<td>{{obj.emp_obj.activeFlag}}</td> &ensp;
+			<td>{{obj.emp_obj.store_obj}}</td> &ensp;
+			<td>{{obj.emp_obj.role}}</td> &ensp;
+		</tr>
+		{% endfor %}
+	</table>
+</div>
+
+
+<!------------------------------------------------------------------------------------------------------->
+<!-----------------3. FORM: Add new Store --------------------------------------------------------------->
+<!------------------------------------------------------------------------------------------------------->
+
+<form method="POST" action="./" id="form_add_store" autocomplete="off">
+	<h2 class="t_w" style="color:#ff7a7f;"> Provide Details for new store</h2>
+	{% csrf_token %}
+	<input type="text" hidden id="upd_what" name="upd_what" value="add_new_store"> 
+	<span class="t_w" style="">Store Name: &ensp;</span> 
+	<input type="text" placeholder="Store Name" name="store_name" required  style="background-color:black;" class="t_w"> </br></br>
+	<span class="t_w" style="">Store Address: </span> 
+	<input type="text" placeholder="Store Address" name="store_address" required  style="background-color:black;" class="t_w"> </br></br>
+	<span class="t_w" style="">Cash Value: &nbsp; &ensp;</span>
+	<input type="number" placeholder="Cash Value" name="CV" required  style="background-color:black;" class="t_w"> </br></br>
+	<span class="t_w" style="">Active Flag:&nbsp; &ensp;</span>
+	<select required name="activeFlag" style="background-color:black;width:170px;" class="t_w">
+		<option selected value="Y">Y - Active</option>
+		<option value="N">N - Not Active</option>
+	</select> 		</br></br>
+	
+	<span class="t_w" style="background-color:black;">Store Manager:  &ensp;</span>
+	<input type="text" placeholder="Search Users" name="Store_Manager" id="manager" required style="background-color:black;" class="t_w"> </br></br>
+	
+	<input type="reset" style="background-color:black;" class="t_w" value=" Reset "> &ensp;
+	
+	<input class="t_w" style="background-color:black;" type="submit" name="save_button" value=" Create "> &ensp;
+	<input class="t_w" style="background-color:black;" type="button" name="cancel_button" value=" Cancel " id="btn_cancel">
+</form>
+
+
+</center>
+<script>
+$('#form_add_store').hide();
+
+$('.store_name').click(function(){
+	$('#upd_id').val(this.id.substr(3,));
+	$('#upd_what').val('get_store_details');
+	$('#upd_form').submit();
+});
+
+$('.user_name').click(function(){
+	$('#upd_id').val(this.id.substr(3,));
+	$('#upd_what').val('get_emp_details');
+	$('#upd_form').submit();
+});
+
+$('#btn_add_store').click(function(){
+	$('#all_stores').hide();
+	$('#all_users').hide();
+	$('#form_add_store').show();
+});
+
+$('#btn_cancel').click(function(){
+	$('#all_stores').show();
+	$('#all_users').show();
+	$('#form_add_store').hide();
+});
+
+$(function() {
+	  $( "#manager" ).autocomplete({
+		source: "./get_user_for_manager/",
+	  minLength: 2
+	  }); 
+	});
+</script>
+</body>
+</html>
