@@ -68,17 +68,50 @@ table, th, td {
 		<a href="/logout/" class="t_w t_hover" style="float:inline-end;">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; Logout &#10097;&#10097;&ensp;&ensp; </a>
 		<hr/>
 	</center>
+	<!------------------------------------------------------------------------------------------------------->
+	<!----------------- Additonal MENU for Billing Page ----------------------------------------------------->
+	<!------------------------------------------------------------------------------------------------------->
+	<div class="t_w" style="float: left;">
+		 <a href="/customers/" class="t_w t_hover" style="color:#89ff36;">Manage Customers</a>  &ensp;|&ensp;      
+	</div>
+	<div class="t_w" style="float: left;">
+		<a href="#" class="t_w t_hover" style="color:#89ff36;">Option-2 </a>  <!----- &ensp;|&ensp;         ---->
+	</div>
+	<div class="t_w" style="float: left;">
+		<a href="#" class="t_w t_hover" id="span_show_cust_name" style="color:#ff7a7f;"></a>  <!----- &ensp;|&ensp;         ---->
+	</div>
+	
 </br></br>
 	
 <input type="text" hidden id="bill_id" value="0">
 	
 <center class="t_w">
-	<input type="text" placeholder="Search" name="product" id="product" required autofocus style="background-color:black;" class="t_w"> </br></br>
-	<button class="t_w" style="background-color:black;" name="add" id = "add_to_bill" value=" Add to Bill "> &plus; Add to Bill &plus; </button></br> </br></br> </br>
+	<div id="div_select_cust">
+		Customer Name	 &ensp;
+		<input type="text" value="Default" autocomplete="off" name="cust_name" id="cust_name" required style="background-color:black;" class="t_w" placeholder="Add Customer"> 
+		&ensp;
+		<button style="background-color:black;border-right:3px solid #89ff36; cursor: pointer;" onClick="bill_now();">
+			<span style="color:#89ff36;">&ensp;&#10140;&ensp;</span>
+		</button>
+		</br></br>
+		OR </br></br>
+		Continue with:	 &ensp;
+		<span style="cursor: pointer;color:#ff7a7f;" onClick="$('#cust_name').val('Default'); bill_now();">Default</span>, 
+		<span style="cursor: pointer;color:#ff7a7f;" onClick="$('#cust_name').val('Abhishek'); bill_now();">Abhishek</span>
+	</div>
+	<input hidden type="text" placeholder="Search" name="product" id="product" required autofocus style="background-color:black;" class="t_w"> </br></br>
+	<button hidden class="t_w" style="background-color:black;" name="add" id = "add_to_bill" value=" Add to Bill "> &plus; Add to Bill &plus; </button>
+	</br> </br></br> </br>
 	<span id="message" class="t_w"></span> </br> </br>
 	<table class="t_w" style="width:400px; padding:5px;text-align:center;" id="bill_table">
 		<tr>
-			<td colspan=4><center style="color:#ff7a7f;">Customer Bill: <span class="bill_id"></span></center></td>
+			<td colspan=4>
+			<span style="float:left;color:#ff7a7f;">
+			Customer: <span style="color:white;" id="cust_name_in_bill"></span>
+			</span>
+			
+			<span style="float:inline-end;color:#ff7a7f;">Bill id: <span class="bill_id"></span>&ensp;</span>
+		</td>
 		</tr>
 		<tr>
 			<th> Prd Name </th>
@@ -94,11 +127,34 @@ table, th, td {
 	</table>
 	</br></br>
 	<button style="background-color:black;color:#89ff36;" id="paid_btn"> &ensp; &check; PAID &check; &ensp;</button>
+	<a href="/bill/" style="color:#89ff36;" id="bill_page_link" hidden><span>back to billing_page</span></a>
 </center>
 
 <script>
 $('#bill_table').hide();
 $('#paid_btn').hide();
+// bill_now();
+function show_msg(msg){
+	$("#message").show();
+	$("#message").html(msg);
+	$("#message").css('color', 'red');
+	setTimeout(function(){ $('#message').fadeOut() }, 2000);
+}
+
+function bill_now(){
+	if($('#cust_name').val() == ""){
+		console.log("showing error message");
+		show_msg("Please select customer first.");
+	}
+	else{
+	$('#product').toggle();
+	$('#add_to_bill').toggle();
+	$('#span_show_cust_name').html('&ensp;|&ensp;Customer Name: '+$('#cust_name').val());
+	$('#div_select_cust').toggle();
+	$('#product').focus();
+	}
+}
+
 // Script for autocomplete:
 $(function() {
   $( "#product" ).autocomplete({
@@ -107,8 +163,16 @@ $(function() {
   }); 
 });
 
+$(function() {
+  $( "#cust_name" ).autocomplete({
+    source: "/customers/",
+  minLength: 2
+  }); 
+});
+
 $('body').on('click' , '#add_to_bill', function() 
 { 
+	$('#cust_name_in_bill').html($('#cust_name').val());
 	$.ajax(
 	{ 
 		type:"POST", 
@@ -116,7 +180,8 @@ $('body').on('click' , '#add_to_bill', function()
 		data:{ 
 			what: "add_to_bill", 
 			bill_id: $('#bill_id').val(),
-			prd_name: $('#product').val(), 			
+			prd_name: $('#product').val(),
+			cust: $('#cust_name').val(), 			
 			csrfmiddlewaretoken: '{{ csrf_token }}' 
 		}, 
 		success: function( data )  
@@ -185,7 +250,8 @@ $('body').on("click", '#paid_btn', function()
 			url: "/bill/", 
 			data:{ 
 				what: 'bill_paid', 
-				bill_id: $('#bill_id').val(), 
+				bill_id: $('#bill_id').val(),
+				cust: $('#cust_name').val(),
 				csrfmiddlewaretoken: '{{ csrf_token }}' 
 			}, 
 			success: function( data )  
@@ -210,6 +276,8 @@ $('body').on("click", '#paid_btn', function()
 					$('#paid_btn').hide();
 					$('#product').hide();
 					$('#add_to_bill').hide();
+					$('#bill_page_link').show();
+					$('#cust_name_in_bill').html('&ensp;'+data.cust);
 				}
 				
 			} 

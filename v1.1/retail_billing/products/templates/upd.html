@@ -39,18 +39,21 @@ table, th, td {
 		<a href="/logout/" class="t_w t_hover" style="float:inline-end;">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; Logout &#10097;&#10097;&ensp;&ensp; </a>
 		<hr/>
 	</center>
-</br></br>
+</br>
 
 <center class="t_w">
 <div style="background-color:;height:auto;width:350px;">
 	<form method="POST" action="/upd/">
 		{% csrf_token %}
+		<u><h3 class="t_w" style="color:#ff7a7f;"> Update Product Details</h3></u>
 		<input type="text" hidden id="upd_what" name="upd_what" value="update"> 
 		<input type="number" hidden id="upd_id" name="upd_id" value="{{product.id}}"> 
 		<span class="t_w" style="">Product Name: &ensp;</span> 
 		<input type="text" placeholder="Product Name" name="prd_name" required  style="background-color:black;" class="t_w" value="{{product.name}}"> </br></br>
 		<span class="t_w" style="">Selling Price: &nbsp; &ensp;</span>
 		<input type="number" placeholder="Selling Price" name="sp" required  style="background-color:black;" class="t_w" value="{{product.price}}"> </br></br>
+		<span class="t_w" style="">Wholesale Price:  &ensp;</span>
+		<input type="number" placeholder="Wholesale Price" name="wsp" required  style="background-color:black;" class="t_w" value="{{product.WS_price}}"> </br></br>
 		<span class="t_w" style="">Unit for Price:&nbsp; &ensp;</span>
 		<select required name="unit" style="background-color:black;width:170px;" class="t_w">
 			<option {% if product.unit == 'piece' %} selected {% endif %} value="piece">piece</option>

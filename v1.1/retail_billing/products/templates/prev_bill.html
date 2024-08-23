@@ -70,24 +70,25 @@ table, th, td {
 	<!----------------- DISPLAY LAST 30 BILL INFORMATION ---------------------------------------------------->
 
 	<div style="overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; height: 200px;">
-	<table class="t_w" style="width:450px; height:500px; text-align:center;font-size: 90%;">
+	<table class="t_w" style="width:450px; text-align:center;font-size: 90%;">
 		<tr>
 			<td colspan=5><center style="color:#ff7a7f;">Recent Bills</center></td>
 		</tr>
 		<tr style="background-color: rgb(122, 1, 1); position: sticky; top: 1; z-index: 1;">
 			<th> Bill id </th>
-			<th> Billing Timestamp </th>
+			<th> Cust </th>
+			<th> Updated on </th>
 			<th> Amount </th>
-			<th> Items</th>
 			<th> Status</th>
 		</tr>
 		
 		{% for bill_id, bill in recent_bills.items %}
 		<tr style="color:white;">
 			<td class="recent_bill_id t_hover" id="bill_{{bill.bill_id}}" style="cursor: pointer;">{{bill_id}}</td> &ensp;
+			<td>{{bill.cust}}</td> &ensp;
 			<td>{{bill.date_updated}}</td> &ensp;
 			<td>{{bill.bill_dict.bill_value}}</td> &ensp;
-			<td>{{bill.bill_dict.items | length}}</td> &ensp;
+			<!-- <td>{{bill.bill_dict.items | length}}</td> &ensp; -->
 			<td><span style="color:#89ff36;">{{bill.bill_dict.status}}</span></td>
 		</tr>
 		{% endfor %}
@@ -100,7 +101,9 @@ table, th, td {
 		<tr>
 			<td colspan=4>
 			<center style="color:#ff7a7f;">
-				Customer Bill: <span class="bill_id"></span> &ensp;&ensp; &ensp;&ensp;
+				<span class="cust_name_on_card">cutshjshd</span> &ensp; | &ensp; 
+				Bill: <span class="bill_id"></span> &ensp; | &ensp;  
+				
 				<span class="bill_date"></span>
 			</center></td>
 		</tr>
@@ -138,6 +141,7 @@ $('body').on('click' , '#get_bill', function()
 				$('#bill_table').show();
 				$('.bill_id').html(data.bill_id);
 				$('.bill_date').html(data.date_updated);
+				$('.cust_name_on_card').html(data.cust);
 				$('#bill_no').val('');
 				$('#bill_table tr:last').remove();
 				$('.itemrow').remove();

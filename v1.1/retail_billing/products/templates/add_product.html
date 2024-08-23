@@ -29,7 +29,7 @@ table, th, td {
 .t_hover:hover{
 	color:#ff7a7f;
 }
-.prdnm{
+.prdnm, #btn_add_prd{
 	cursor:pointer;
 }
 </style>
@@ -51,16 +51,19 @@ table, th, td {
 		<a href="/logout/" class="t_w t_hover" style="float:inline-end;">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; Logout &#10097;&#10097;&ensp;&ensp; </a>
 		<hr/>
 	</center>
-</br></br>
+</br>
 
 <center class="t_w">
-<div style="background-color:;height:auto;width:350px;">
+<div style="background-color:;height:auto;width:350px;" hidden id = "form_add_product">
 	<form method="POST" action="/add/">
 		{% csrf_token %}
+		<u><h3 class="t_w" style="color:#ff7a7f;"> New Product Details</h3></u>
 		<span class="t_w" style="">Product Name: &ensp;</span> 
 		<input type="text" placeholder="Product Name" name="prd_name" required  style="background-color:black;" class="t_w"> </br></br>
 		<span class="t_w" style="">Selling Price: &nbsp; &ensp;</span>
 		<input type="number" placeholder="Selling Price" name="sp" required  style="background-color:black;" class="t_w"> </br></br>
+		<span class="t_w" style="">Wholesale Price:  &ensp;</span>
+		<input type="number" placeholder="Wholesale Price" name="wsp" required  style="background-color:black;" class="t_w"> </br></br>
 		<span class="t_w" style="">Unit for Price:&nbsp; &ensp;</span>
 		<select required name="unit" style="background-color:black;width:170px;" class="t_w" >
 			<option value="piece">piece</option>
@@ -80,18 +83,24 @@ table, th, td {
 		<!--<input type="reset" style="background-color:black;" class="t_w" value=" Reset "> &ensp; &ensp;
 		-->
 		<input class="t_w" style="background-color:black;" type="submit" name="submit_button" value=" Save ">
+		<input class="t_w" style="background-color:black;" type="button" name="cancel_button" value=" Cancel " id="btn_cancel">
 		
 	</form>
 </div>
-<div style="width:450px;overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; height: 200px;">
+<div style="width:450px;overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; height: 200px;" id="all_products">
 	<table class="t_w" style="width:450px;">
 	<tr>
-		<td colspan=5><center style="color:#ff7a7f;">Recently Added products</center></td>
+		<td colspan=6>
+			<center style="color:#ff7a7f;">
+				Recently Added products&ensp;  &#9830; &ensp;
+				<span id="btn_add_prd" class="t_hover">Add New Product&#10750;</span>
+			</center></td>
 	</tr>
 	<tr style="background-color: rgb(122, 1, 1); position: sticky; top: 1; z-index: 1;">
 		<th> Prd id </th>
 		<th> Prd Name </th>
 		<th> Price </th>
+		<th> WSP </th>
 		<th> per </th>
 		<th> Qty</th>
 	</tr>
@@ -101,6 +110,7 @@ table, th, td {
 		<td>{{product.id}}</td> &ensp;
 		<td class = "prdnm" id="row{{product.id}}"><span style="color:#89ff36;">{{product.name}}</span></td> &ensp;
 		<td>{{product.price}}</td> &ensp;
+		<td>{{product.WS_price}}</td> &ensp;
 		<td>{{product.unit}}</td> &ensp;
 		<td>{{product.available_qty}}</td>
 	</tr>
@@ -117,12 +127,21 @@ table, th, td {
 </center>
 
 <script>
+
 $('.prdnm').click(function(){
 	$('#upd_id').val(this.id.substr(3,));
 	$('#upd_what').val('open');
 	$('#upd_form').submit();
 });
+$('#btn_add_prd').click(function(){
+	$('#all_products').hide();
+	$('#form_add_product').show();
+});
 
+$('#btn_cancel').click(function(){
+	$('#all_products').show();
+	$('#form_add_product').hide();
+});
 </script>
 </body>
 </html>
