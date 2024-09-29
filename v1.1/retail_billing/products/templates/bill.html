@@ -96,8 +96,11 @@ table, th, td {
 		</br></br>
 		OR </br></br>
 		Continue with:	 &ensp;
-		<span style="cursor: pointer;color:#ff7a7f;" onClick="$('#cust_name').val('Default'); bill_now();">Default</span>, 
-		<span style="cursor: pointer;color:#ff7a7f;" onClick="$('#cust_name').val('Abhishek'); bill_now();">Abhishek</span>
+		<!-- <span style="cursor: pointer;color:#ff7a7f;" onClick="$('#cust_name').val('Default'); bill_now();">Default</span>, 
+		<span style="cursor: pointer;color:#ff7a7f;" onClick="$('#cust_name').val('Abhishek'); bill_now();">Abhishek</span>, -->
+		{% for cust in top3_cust_obj %}
+		<span style="cursor: pointer;color:#ff7a7f;" onClick="$('#cust_name').val('{{cust}}'); bill_now();">{{cust}}</span>,
+		{% endfor %}
 	</div>
 	<input hidden type="text" placeholder="Search" name="product" id="product" required autofocus style="background-color:black;" class="t_w"> </br></br>
 	<button hidden class="t_w" style="background-color:black;" name="add" id = "add_to_bill" value=" Add to Bill "> &plus; Add to Bill &plus; </button>

@@ -152,6 +152,7 @@ def bill(request):
         data = {}
         emp_obj = store_emp.objects.all().filter(emp_obj=request.user).first()
         data['store_obj'] = emp_obj.store_obj if emp_obj is not None else "Store not available"
+        data['top3_cust_obj'] = [t.name for t in list(customer.objects.filter(store_obj=get_store_obj(request.user)).order_by('-visit_freq'))][:3]
         return render(request,'bill.html',data)
 
 @login_required(login_url='/login/')
